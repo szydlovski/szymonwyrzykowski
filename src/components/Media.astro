@@ -1,0 +1,74 @@
+---
+import axios from 'axios';
+import { load } from 'cheerio';
+
+async function fetchHTML(url: string): Promise<string> {
+	const response = await axios.get(url);
+	return response.data;
+}
+
+interface PageMetadata {
+	url: string;
+	title: string;
+	leadText: string;
+	imageUrl: string;
+}
+
+async function fetchPageMetadata(url: string): Promise<PageMetadata> {
+	const html = await fetchHTML(url);
+	const $ = load(html);
+	const title = $('title').text().trim();
+	const leadText = $('meta[name="description"]').attr('content');
+	const imageUrl = $('meta[property="og:image"]').attr('content');
+	return { url: '', title, leadText, imageUrl };
+}
+
+async function fetchMetadataForUrls(urls: string[]): Promise<PageMetadata[]> {
+	const metadataPromises = urls.map(async (url) => {
+		return await fetchPageMetadata(url);
+	});
+	return Promise.all(metadataPromises);
+}
+
+const links = [
+	'https://radioszczecin.pl/172,2997,szymon-wyrzykowski-dyrektorem-artystycznym-choru',
+	'https://radioszczecin.pl/4,455978,zloty-medal-gloria-artis-dla-choru-akademickiego',
+	'https://www.radioplus.pl/szczecin/zaspiewaja-w-20-rocznice-smierci-prof-jana-szyrockiego-absolwenci-chorow-poszukiwani-aa-8Q2h-xp6X-QR7X.html',
+	'https://szczecin.tvp.pl/68738627/250323',
+	'https://szczecin.tvp.pl/64621947/70-lat-od-pierwszej-proby-choru-jana-szyrockiego',
+	'https://szczecin.tvp.pl/64598831/191122',
+	'https://szczecin.tvp.pl/62293141/poszukiwania-nowych-talentow-zespoly-z-regionu-zapraszaja',
+	'https://szczecin.tvp.pl/60045691/70522',
+	'https://szczecin.tvp.pl/57556307/wszyscy-spiewajmy-koledy-rozmowa-z-szymonem-wyrzykowskim-dyrygentem-choru-zut',
+	'https://szczecin.tvp.pl/56418077/161021',
+	'https://szczecin.tvp.pl/53468793/240421',
+	'https://szczecin.tvp.pl/45761406/121219',
+	'https://szczecin.tvp.pl/42262979/180419',
+	'https://www.youtube.com/watch?v=WPK1Z7JZkww',
+];
+
+const media = await Promise.all(links.map(fetchPageMetadata))
+---
+
+<div class="container-fluid d-flex flex-column" style="background-color:black">
+	<div class="container">
+		<div class="row p-5">
+			{
+				media.map((entry) => (
+					<div class="col-6 col-md-4 col-lg-3 py-3 text-light">
+						<div class="card">
+							<img src={entry.imageUrl} class="card-img-top" alt="..." />
+							<div class="card-body">
+								<h5 class="card-title">{entry.title}</h5>
+								<p class="card-text">{entry.leadText}</p>
+								<a href={entry.imageUrl} class="btn btn-primary">
+									Otwórz
+								</a>
+							</div>
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>
