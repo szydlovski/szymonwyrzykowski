@@ -61,7 +61,7 @@ const media = await Promise.all(links.map(fetchPageMetadata))
 							<div class="card-body">
 								<h5 class="card-title">{entry.title}</h5>
 								<p class="card-text">{entry.leadText}</p>
-								<a href={entry.imageUrl} class="btn btn-primary">
+								<a href={entry.url} class="btn btn-primary">
 									Otwórz
 								</a>
 							</div>
